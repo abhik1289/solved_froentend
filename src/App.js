@@ -1,25 +1,78 @@
-import logo from './logo.svg';
-import './App.css';
+import './App.css'
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  useNavigate,
+  useLocation,
+} from 'react-router-dom'
+import Home from './pages/Home/Home'
+import Navigation from './components/shared/Navigation/Navigation'
+import Register from './pages/Register/Register'
+import Login from './pages/Login/Login'
+import Authenticate from './pages/authenticate/Authenticate'
+import Activate from './pages/activate/Activate'
+import Rooms from './pages/Rooms/Room'
+
+const isAuth = false
+const user = {
+  activated: false,
+}
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+    <BrowserRouter>
+      <Navigation />
+      <Routes>
+        <Route path='/' element={<GuestRoute Component={Home} />} />
+        <Route
+          path='/authenticate'
+          element={<GuestRoute Component={Authenticate} />}
+        />
+        <Route
+          path='/activate'
+          element={<SemiProtected Component={Activate} />}
+        />
+        <Route path='/rooms' element={<Protected Component={Rooms} />} />
+        {/* <Route path='/register' element={<Register />} />
+        <Route path='/login' element={<Login />} /> */}
+      </Routes>
+    </BrowserRouter>
+  )
 }
 
-export default App;
+const GuestRoute = ({ Component }) => {
+  const navigate = useNavigate()
+  if (isAuth) {
+    return navigate('/rooms')
+  } else {
+    return <Component />
+  }
+}
+
+const SemiProtected = ({ Component }) => {
+  const navigate = useNavigate()
+  if (!isAuth) {
+    return navigate('/')
+  } else {
+    if (!user.activated) {
+      return <Component />
+    } else {
+      return navigate('/rooms')
+    }
+  }
+}
+
+const Protected = ({ Component }) => {
+  const navigate = useNavigate()
+  if (!isAuth) {
+    return navigate('/')
+  } else {
+    if (!user.activated) {
+      return navigate('/activate')
+    } else {
+      return <Component />
+    }
+  }
+}
+export default App
